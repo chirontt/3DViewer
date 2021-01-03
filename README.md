@@ -2,6 +2,18 @@
 
 This 3DViewer project is a sample JavaFX application extracted from [openjdk/jfx/apps/samples/3DViewer](https://github.com/openjdk/jfx/tree/master/apps/samples/3DViewer).
 
+Description for 3DViewer extracted from [openjdk/jfx/apps/samples/samples_readme.txt](https://github.com/openjdk/jfx/blob/master/apps/samples/samples_readme.txt):
+
+<pre>
+	3DViewer is a sample application that allows the user to navigate and examine a 
+	3D scene with a mouse or a trackpad. 3DViewer has importers for a subset of the 
+	features in OBJ and Maya files. The ability to import animation is also 
+	provided for Maya files. (Note that in the case of Maya files, construction 
+	history should be deleted on all the objects when saving as a Maya file.) 
+	3DViewer also has the ability to export the contents of the scene as Java or 
+	FXML files.
+</pre>
+
 An excellent overview of this 3DViewer application is described on [3DViewer: Better 3D for JavaFX](https://news.kynosarges.org/2018/04/08/3dviewer-better-3d-for-javafx/) by Christoph Nahr.
 
 The 3D model code in this application is used as a library dependency to the beautiful [RubikFX](https://github.com/jperedadnr/RubikFX), a Rubik's Cube 3D simulator by José Pereda.
