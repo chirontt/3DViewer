@@ -1,9 +1,103 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.9'
+}
 
+wrapper {
+    gradleVersion = '6.7.1'
+    distributionType = Wrapper.DistributionType.ALL
+}
 
-apply plugin:'application'
+group = 'com.javafx.experiments'
 
-mainClassName = "com.javafx.experiments.jfx3dviewer.Jfx3dViewerApp"
+ext {
+    mainClassName = 'com.javafx.experiments.jfx3dviewer.Jfx3dViewerApp'
+    launcherClassName = 'com.javafx.experiments.jfx3dviewer.Launcher'
+    javafxVersion = '11.0.2'  //requires JDK10+
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+configurations {
+    //define a configuration for other supported OS native libraries (apart from the current OS)
+    otherOSnatives
+}
+
+dependencies {
+    def currentOS = javafx.platform.classifier
+	['linux', 'mac', 'win'].each { classifier ->
+        if (classifier != currentOS) {
+            otherOSnatives "org.openjfx:javafx-base:$javafxVersion:$classifier"
+            otherOSnatives "org.openjfx:javafx-controls:$javafxVersion:$classifier"
+            otherOSnatives "org.openjfx:javafx-fxml:$javafxVersion:$classifier"
+            otherOSnatives "org.openjfx:javafx-graphics:$javafxVersion:$classifier"
+            otherOSnatives "org.openjfx:javafx-swing:$javafxVersion:$classifier"
+        }
+    }
+}
+
+compileJava {
+    options.release = 10  //use JDK10+ for compiling & running
+    options.encoding = 'UTF-8'
+}
+
+javafx {
+    version = javafxVersion
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.swing']
+}
 
 jar {
-    manifest.attributes("Main-Class": mainClassName)
+    manifest {
+        attributes(
+            'Main-Class': project.mainClassName,
+            'JavaFX-Version': javafxVersion,
+            'Created-By': System.getProperty('java.runtime.version') + ' (' + System.getProperty('java.vendor') + ')',
+            'Gradle-Version': 'Gradle ' + gradle.getGradleVersion(),
+        )
+    }
 }
+
+application {
+    mainClass = project.mainClassName
+    executableDir = ''
+    applicationDefaultJvmArgs = ['--module-path', 'lib', '--add-modules', 'javafx.controls,javafx.fxml,javafx.swing']
+}
+
+//main distribution generated would be platform-specific to the current OS
+//hence the distribution's name should reflect that
+distributions.main.distributionBaseName = project.name + '-' + javafx.platform.classifier
+
+run {
+    //args '...'
+
+    debugOptions {
+        enabled = true
+        port = 5566
+        server = true
+        suspend = false
+    }
+}
+
+//make an executable fat jar including all dependencies
+//which should work in all supported OS'es (Windows, Mac and Linux)
+task fatJar(type: Jar) {
+    archiveFileName = project.name + '-no-deps.jar'
+    manifest {
+        attributes(
+            'Main-Class': project.launcherClassName,
+            'JavaFX-Version': javafxVersion,
+            'Created-By': System.getProperty('java.runtime.version') + ' (' + System.getProperty('java.vendor') + ')',
+            'Gradle-Version': 'Gradle ' + gradle.getGradleVersion(),
+        )
+    }
+    from {
+        def allClasspaths = sourceSets.main.output + configurations.runtimeClasspath + configurations.otherOSnatives
+        allClasspaths.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy 'exclude'
+}
+
