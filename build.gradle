@@ -1,6 +1,6 @@
 plugins {
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.0.9'
+    id 'org.openjfx.javafxplugin' version '0.0.9'  //requires JDK11+
 }
 
 wrapper {
@@ -13,12 +13,12 @@ group = 'com.javafx.experiments'
 ext {
     mainClassName = 'com.javafx.experiments.jfx3dviewer.Jfx3dViewerApp'
     launcherClassName = 'com.javafx.experiments.jfx3dviewer.Launcher'
-    javafxVersion = '11.0.2'  //requires JDK10+
+    javafxVersion = '11.0.2'  //requires JDK11+
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
+    mavenLocal()
     jcenter()
 }
 
@@ -29,7 +29,7 @@ configurations {
 
 dependencies {
     def currentOS = javafx.platform.classifier
-	['linux', 'mac', 'win'].each { classifier ->
+    ['linux', 'mac', 'win'].each { classifier ->
         if (classifier != currentOS) {
             otherOSnatives "org.openjfx:javafx-base:$javafxVersion:$classifier"
             otherOSnatives "org.openjfx:javafx-controls:$javafxVersion:$classifier"
@@ -41,7 +41,7 @@ dependencies {
 }
 
 compileJava {
-    options.release = 10  //use JDK10+ for compiling & running
+    options.release = 11  //use JDK11+ for compiling & running
     options.encoding = 'UTF-8'
 }
 

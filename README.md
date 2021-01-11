@@ -18,7 +18,7 @@ An excellent overview of this 3DViewer application is described on [3DViewer: Be
 
 The 3D model code in this application is used as a library dependency to the beautiful [RubikFX](https://github.com/jperedadnr/RubikFX), a Rubik's Cube 3D simulator by José Pereda.
 
-Gradle build script is updated to build a stand-alone `Viewer3D` application and/or library, for Java/JavaFX 10+. The name is changed from the default `3DViewer` to `Viewer3D`, to avoid the following error at runtime when the jar file happens to be on the module path:
+Gradle build script is updated to build a stand-alone `Viewer3D` application and/or library, for Java/JavaFX 11+. The name is changed from the default `3DViewer` to `Viewer3D`, to avoid the following error at runtime when the jar file happens to be on the module path:
 
 	Error occurred during initialization of boot layer
 	java.lang.module.FindException: Unable to derive module descriptor for lib/3DViewer.jar
