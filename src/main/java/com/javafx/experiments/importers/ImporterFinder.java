@@ -47,7 +47,13 @@ public class ImporterFinder {
 
         File libDir = null;
         try {
-            File currentDir = new File(url.toURI()).getParentFile();
+            File currentDir;
+            if ("jrt".equals(url.getProtocol())) {
+                //part of modular run-time image
+                currentDir = new File(url.getPath()).getParentFile();
+            } else {
+                currentDir = new File(url.toURI()).getParentFile();
+            }
             libDir = new File(currentDir, "lib");
         } catch (URISyntaxException ue) {
             ue.printStackTrace();

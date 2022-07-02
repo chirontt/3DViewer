@@ -1,43 +1,27 @@
 plugins {
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.0.9'  //requires JDK11+
+    id 'org.openjfx.javafxplugin' version '0.0.13'  //requires JDK11+
+    id 'org.beryx.jlink' version '2.25.0'
 }
 
 wrapper {
-    gradleVersion = '6.7.1'
+    gradleVersion = '7.4.2'
     distributionType = Wrapper.DistributionType.ALL
 }
 
 group = 'com.javafx.experiments'
+version = '1.0.0-SNAPSHOT'
 
 ext {
+    mainModuleName = 'Viewer3D'
     mainClassName = 'com.javafx.experiments.jfx3dviewer.Jfx3dViewerApp'
     launcherClassName = 'com.javafx.experiments.jfx3dviewer.Launcher'
-    javafxVersion = '11.0.2'  //requires JDK11+
+    javafxVersion = '17.0.2'  //requires JDK11+
 }
 
 repositories {
     mavenCentral()
     mavenLocal()
-    jcenter()
-}
-
-configurations {
-    //define a configuration for other supported OS native libraries (apart from the current OS)
-    otherOSnatives
-}
-
-dependencies {
-    def currentOS = javafx.platform.classifier
-    ['linux', 'mac', 'win'].each { classifier ->
-        if (classifier != currentOS) {
-            otherOSnatives "org.openjfx:javafx-base:$javafxVersion:$classifier"
-            otherOSnatives "org.openjfx:javafx-controls:$javafxVersion:$classifier"
-            otherOSnatives "org.openjfx:javafx-fxml:$javafxVersion:$classifier"
-            otherOSnatives "org.openjfx:javafx-graphics:$javafxVersion:$classifier"
-            otherOSnatives "org.openjfx:javafx-swing:$javafxVersion:$classifier"
-        }
-    }
 }
 
 compileJava {
@@ -62,9 +46,9 @@ jar {
 }
 
 application {
+    mainModule = project.mainModuleName
     mainClass = project.mainClassName
     executableDir = ''
-    applicationDefaultJvmArgs = ['--module-path', 'lib', '--add-modules', 'javafx.controls,javafx.fxml,javafx.swing']
 }
 
 //main distribution generated would be platform-specific to the current OS
@@ -74,18 +58,23 @@ distributions.main.distributionBaseName = project.name + '-' + javafx.platform.c
 run {
     //args '...'
 
+    //get system properties specified from the command line (for debugging, etc.)
+    //and pass them on to the running application's JVM
+    systemProperties = System.getProperties()
+
     debugOptions {
-        enabled = true
+        enabled = false
         port = 5566
         server = true
         suspend = false
     }
 }
 
-//make an executable fat jar including all dependencies
-//which should work in all supported OS'es (Windows, Mac and Linux)
-task fatJar(type: Jar) {
-    archiveFileName = project.name + '-no-deps.jar'
+//make an executable uber jar including all dependencies
+//which should work only for current OS platform
+task uberJar(type: Jar) {
+    archiveClassifier = 'no-deps-' + javafx.platform.classifier
+    with jar
     manifest {
         attributes(
             'Main-Class': project.launcherClassName,
@@ -95,9 +84,15 @@ task fatJar(type: Jar) {
         )
     }
     from {
-        def allClasspaths = sourceSets.main.output + configurations.runtimeClasspath + configurations.otherOSnatives
-        allClasspaths.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
     duplicatesStrategy 'exclude'
+}
+
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher {
+        name = project.mainModuleName
+    }
 }
 
